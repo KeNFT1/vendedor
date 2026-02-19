@@ -1,5 +1,10 @@
 package com.vendedor.app.feature.listing.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
@@ -47,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -74,6 +81,7 @@ fun ListingDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val copiedText = stringResource(R.string.copied)
 
     val photoSavedText = stringResource(R.string.photo_saved)
     val photoErrorText = stringResource(R.string.photo_save_error)
@@ -183,49 +191,73 @@ fun ListingDetailScreen(
             StatusBadge(status = uiState.status)
             Spacer(Modifier.height(12.dp))
 
-            // Title
-            Text(uiState.title.ifBlank { "—" }, style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.height(8.dp))
+            // Title (copyable)
+            if (uiState.title.isNotBlank()) {
+                CopyableText(
+                    text = uiState.title,
+                    style = MaterialTheme.typography.headlineMedium,
+                    context = context,
+                    copiedText = copiedText
+                )
+                Spacer(Modifier.height(8.dp))
+            }
 
-            // Price
+            // Price (copyable)
             if (uiState.askingPrice.isNotBlank()) {
-                Text(
-                    "\$${uiState.askingPrice}",
+                CopyableText(
+                    text = "\$${uiState.askingPrice}",
                     style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    context = context,
+                    copiedText = copiedText
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+
+            // Suggested price range (copyable)
+            if (uiState.suggestedPriceLow.isNotBlank() && uiState.suggestedPriceHigh.isNotBlank()) {
+                CopyableText(
+                    text = "${stringResource(R.string.suggested_price)}: \$${uiState.suggestedPriceLow} - \$${uiState.suggestedPriceHigh}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    context = context,
+                    copiedText = copiedText
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+
+            // Description (copyable)
+            if (uiState.description.isNotBlank()) {
+                CopyableText(
+                    text = uiState.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    context = context,
+                    copiedText = copiedText
                 )
                 Spacer(Modifier.height(12.dp))
             }
 
-            // Description
-            if (uiState.description.isNotBlank()) {
-                Text(uiState.description, style = MaterialTheme.typography.bodyLarge)
-                Spacer(Modifier.height(12.dp))
-            }
-
-            // Details card
+            // Details card with copy buttons
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     if (uiState.category.isNotBlank()) {
-                        DetailRow(stringResource(R.string.category), uiState.category)
+                        CopyableDetailRow(stringResource(R.string.category), uiState.category, context, copiedText)
                     }
                     if (uiState.brand.isNotBlank()) {
-                        DetailRow(stringResource(R.string.brand), uiState.brand)
+                        CopyableDetailRow(stringResource(R.string.brand), uiState.brand, context, copiedText)
                     }
                     if (uiState.condition.isNotBlank()) {
-                        DetailRow(stringResource(R.string.condition), uiState.condition)
+                        CopyableDetailRow(stringResource(R.string.condition), uiState.condition, context, copiedText)
                     }
                     if (uiState.lengthInches.isNotBlank()) {
-                        DetailRow(
-                            stringResource(R.string.dimensions),
-                            "${uiState.lengthInches} x ${uiState.widthInches} x ${uiState.heightInches} in"
-                        )
+                        val dims = "${uiState.lengthInches} x ${uiState.widthInches} x ${uiState.heightInches} in"
+                        CopyableDetailRow(stringResource(R.string.dimensions), dims, context, copiedText)
                     }
                     if (uiState.weightOz.isNotBlank()) {
-                        DetailRow(stringResource(R.string.weight), "${uiState.weightOz} oz")
+                        CopyableDetailRow(stringResource(R.string.weight), "${uiState.weightOz} oz", context, copiedText)
                     }
                 }
             }
@@ -271,14 +303,64 @@ fun ListingDetailScreen(
 }
 
 @Composable
-private fun DetailRow(label: String, value: String) {
+private fun CopyableText(
+    text: String,
+    style: androidx.compose.ui.text.TextStyle,
+    context: Context,
+    copiedText: String,
+    color: androidx.compose.ui.graphics.Color = androidx.compose.ui.graphics.Color.Unspecified
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = text,
+            style = style,
+            color = color,
+            modifier = Modifier.weight(1f)
+        )
+        IconButton(
+            onClick = { copyToClipboard(context, text, copiedText) },
+            modifier = Modifier.size(36.dp)
+        ) {
+            Icon(
+                Icons.Default.ContentCopy,
+                contentDescription = stringResource(R.string.copy),
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun CopyableDetailRow(label: String, value: String, context: Context, copiedText: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .clickable { copyToClipboard(context, value, copiedText) }
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(value, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.width(4.dp))
+            Icon(
+                Icons.Default.ContentCopy,
+                contentDescription = stringResource(R.string.copy),
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+        }
     }
+}
+
+private fun copyToClipboard(context: Context, text: String, toastMessage: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("Vendedor", text))
+    Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
 }

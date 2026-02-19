@@ -1,5 +1,9 @@
 package com.vendedor.app.feature.identification.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -68,6 +74,8 @@ fun IdentificationResultScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val copiedText = stringResource(R.string.copied)
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let {
@@ -170,21 +178,36 @@ fun IdentificationResultScreen(
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier
+                            .padding(start = 12.dp, top = 4.dp, bottom = 4.dp, end = 4.dp)
+                            .fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            Icons.Default.AttachMoney,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "${stringResource(R.string.suggested_price)}: \$${uiState.suggestedPriceLow} - \$${uiState.suggestedPriceHigh}",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.AttachMoney,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "\$${uiState.suggestedPriceLow} - \$${uiState.suggestedPriceHigh}",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                        IconButton(onClick = {
+                            copyToClipboard(context, "\$${uiState.suggestedPriceLow} - \$${uiState.suggestedPriceHigh}", copiedText)
+                        }) {
+                            Icon(
+                                Icons.Default.ContentCopy,
+                                contentDescription = stringResource(R.string.copy),
+                                modifier = Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
                     }
                 }
             }
@@ -192,22 +215,24 @@ fun IdentificationResultScreen(
             Spacer(Modifier.height(16.dp))
 
             // Title
-            OutlinedTextField(
+            CopyableTextField(
                 value = uiState.title,
                 onValueChange = { viewModel.updateTitle(it) },
-                label = { Text(stringResource(R.string.title)) },
-                modifier = Modifier.fillMaxWidth(),
+                label = stringResource(R.string.title),
+                context = context,
+                copiedText = copiedText,
                 singleLine = true
             )
 
             Spacer(Modifier.height(12.dp))
 
             // Description
-            OutlinedTextField(
+            CopyableTextField(
                 value = uiState.description,
                 onValueChange = { viewModel.updateDescription(it) },
-                label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier.fillMaxWidth(),
+                label = stringResource(R.string.description),
+                context = context,
+                copiedText = copiedText,
                 minLines = 3,
                 maxLines = 6
             )
@@ -219,17 +244,21 @@ fun IdentificationResultScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                OutlinedTextField(
+                CopyableTextField(
                     value = uiState.category,
                     onValueChange = { viewModel.updateCategory(it) },
-                    label = { Text(stringResource(R.string.category)) },
+                    label = stringResource(R.string.category),
+                    context = context,
+                    copiedText = copiedText,
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
-                OutlinedTextField(
+                CopyableTextField(
                     value = uiState.brand,
                     onValueChange = { viewModel.updateBrand(it) },
-                    label = { Text(stringResource(R.string.brand)) },
+                    label = stringResource(R.string.brand),
+                    context = context,
+                    copiedText = copiedText,
                     modifier = Modifier.weight(1f),
                     singleLine = true
                 )
@@ -237,19 +266,43 @@ fun IdentificationResultScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // Condition dropdown
-            ConditionDropdown(
+            // Condition dropdown with copy
+            CopyableConditionDropdown(
                 selectedCondition = uiState.condition,
-                onConditionSelected = { viewModel.updateCondition(it) }
+                onConditionSelected = { viewModel.updateCondition(it) },
+                context = context,
+                copiedText = copiedText
             )
 
             Spacer(Modifier.height(12.dp))
 
             // Dimensions
-            Text(
-                stringResource(R.string.dimensions) + " (" + stringResource(R.string.inches) + ")",
-                style = MaterialTheme.typography.labelLarge
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    stringResource(R.string.dimensions) + " (" + stringResource(R.string.inches) + ")",
+                    style = MaterialTheme.typography.labelLarge
+                )
+                if (uiState.lengthInches.isNotBlank()) {
+                    IconButton(onClick = {
+                        copyToClipboard(
+                            context,
+                            "${uiState.lengthInches} x ${uiState.widthInches} x ${uiState.heightInches} in",
+                            copiedText
+                        )
+                    }) {
+                        Icon(
+                            Icons.Default.ContentCopy,
+                            contentDescription = stringResource(R.string.copy),
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -284,13 +337,15 @@ fun IdentificationResultScreen(
             Spacer(Modifier.height(12.dp))
 
             // Weight
-            OutlinedTextField(
+            CopyableTextField(
                 value = uiState.weightOz,
                 onValueChange = { viewModel.updateWeight(it) },
-                label = { Text(stringResource(R.string.weight_oz)) },
+                label = stringResource(R.string.weight_oz),
+                context = context,
+                copiedText = copiedText,
                 modifier = Modifier.fillMaxWidth(0.5f),
                 singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                keyboardType = KeyboardType.Decimal
             )
 
             Spacer(Modifier.height(24.dp))
@@ -324,11 +379,49 @@ fun IdentificationResultScreen(
     }
 }
 
+@Composable
+private fun CopyableTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    context: Context,
+    copiedText: String,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = false,
+    minLines: Int = 1,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        modifier = modifier.then(if (modifier == Modifier) Modifier.fillMaxWidth() else Modifier),
+        singleLine = singleLine,
+        minLines = if (singleLine) 1 else minLines,
+        maxLines = maxLines,
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        trailingIcon = {
+            if (value.isNotBlank()) {
+                IconButton(onClick = { copyToClipboard(context, value, copiedText) }) {
+                    Icon(
+                        Icons.Default.ContentCopy,
+                        contentDescription = stringResource(R.string.copy),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+        }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ConditionDropdown(
+private fun CopyableConditionDropdown(
     selectedCondition: String,
-    onConditionSelected: (String) -> Unit
+    onConditionSelected: (String) -> Unit,
+    context: Context,
+    copiedText: String
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -351,7 +444,20 @@ private fun ConditionDropdown(
             onValueChange = {},
             readOnly = true,
             label = { Text(stringResource(R.string.condition)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+            trailingIcon = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (displayText.isNotBlank()) {
+                        IconButton(onClick = { copyToClipboard(context, displayText, copiedText) }) {
+                            Icon(
+                                Icons.Default.ContentCopy,
+                                contentDescription = stringResource(R.string.copy),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded)
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable)
@@ -371,4 +477,10 @@ private fun ConditionDropdown(
             }
         }
     }
+}
+
+private fun copyToClipboard(context: Context, text: String, toastMessage: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    clipboard.setPrimaryClip(ClipData.newPlainText("Vendedor", text))
+    Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
 }
