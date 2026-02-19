@@ -17,6 +17,9 @@ interface ItemPhotoDao {
     @Query("SELECT * FROM item_photos WHERE itemId = :itemId AND isPrimary = 1 LIMIT 1")
     suspend fun getPrimaryPhoto(itemId: Long): ItemPhotoEntity?
 
+    @Query("SELECT * FROM item_photos WHERE isPrimary = 1")
+    fun getAllPrimaryPhotos(): Flow<List<ItemPhotoEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(photo: ItemPhotoEntity): Long
 

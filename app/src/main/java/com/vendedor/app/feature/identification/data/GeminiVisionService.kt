@@ -18,7 +18,7 @@ class GeminiVisionService @Inject constructor(
     private fun createModel(): GenerativeModel {
         val key = apiKeyManager.geminiApiKey
         require(key.isNotBlank()) { "Gemini API key not configured. Go to Settings to add it." }
-        return GenerativeModel(modelName = "gemini-2.0-flash", apiKey = key)
+        return GenerativeModel(modelName = "gemini-2.5-flash-lite", apiKey = key)
     }
 
     suspend fun identifyItem(photoPath: String): AiIdentificationResponse {
@@ -45,21 +45,30 @@ class GeminiVisionService @Inject constructor(
     }
 
     private fun extractJson(text: String): String {
-        // Try to extract JSON from markdown code block
-        val codeBlockRegex = Regex("```(?:json)?\\s*\\n?(\\{.*?})\\s*\\n?```", RegexOption.DOT_MATCHES_ALL)
-        val match = codeBlockRegex.find(text)
-        if (match != null) {
-            return match.groupValues[1]
+        // Strip markdown code fences if present (no regex needed)
+        var cleaned = text.trim()
+        if (cleaned.startsWith("\u0060\u0060\u0060")) {
+            // Remove opening fence (```json or ```)
+            val firstNewline = cleaned.indexOf('\n')
+            if (firstNewline != -1) {
+                cleaned = cleaned.substring(firstNewline + 1)
+            }
+            // Remove closing fence
+            val lastFence = cleaned.lastIndexOf("\u0060\u0060\u0060")
+            if (lastFence != -1) {
+                cleaned = cleaned.substring(0, lastFence)
+            }
+            cleaned = cleaned.trim()
         }
 
-        // Try to find raw JSON object
-        val jsonStart = text.indexOf('{')
-        val jsonEnd = text.lastIndexOf('}')
+        // Find the JSON object
+        val jsonStart = cleaned.indexOf('{')
+        val jsonEnd = cleaned.lastIndexOf('}')
         if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart) {
-            return text.substring(jsonStart, jsonEnd + 1)
+            return cleaned.substring(jsonStart, jsonEnd + 1)
         }
 
-        return text
+        return cleaned
     }
 
     companion object {
@@ -78,6 +87,8 @@ Analyze the provided photo of an item and return ONLY a JSON object (no other te
   "estimatedWidthInches": estimated width in inches as a number or null,
   "estimatedHeightInches": estimated height in inches as a number or null,
   "estimatedWeightOz": estimated weight in ounces as a number or null,
+  "estimatedPriceLow": low end of fair resale price in USD as a number,
+  "estimatedPriceHigh": high end of fair resale price in USD as a number,
   "suggestedSearchTerms": ["term1", "term2", "term3"] for price research
 }
 
@@ -85,6 +96,7 @@ Important:
 - Be specific in the title (include brand, model, color when visible)
 - Description should be written as if for an eBay or Mercari listing
 - Estimate dimensions and weight based on visual cues and known product sizes
+- Price range should reflect typical used resale value on eBay/Mercari based on condition
 - Search terms should be effective for finding comparable sold items on eBay
 - Return ONLY the JSON object, no explanation
         """.trimIndent()

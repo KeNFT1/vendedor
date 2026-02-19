@@ -14,5 +14,7 @@ data class AiIdentificationResponse(
     val estimatedWidthInches: Float? = null,
     val estimatedHeightInches: Float? = null,
     val estimatedWeightOz: Float? = null,
+    val estimatedPriceLow: Double? = null,
+    val estimatedPriceHigh: Double? = null,
     val suggestedSearchTerms: List<String> = emptyList()
 )

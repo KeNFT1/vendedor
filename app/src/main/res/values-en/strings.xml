@@ -119,4 +119,10 @@
     <string name="save_address">Save address</string>
     <string name="about">About</string>
     <string name="version">Version</string>
+
+    <!-- Photo Actions -->
+    <string name="save_to_gallery">Save to gallery</string>
+    <string name="share_photos">Share photos</string>
+    <string name="photo_saved">Photo(s) saved to gallery</string>
+    <string name="photo_save_error">Error saving photo</string>
 </resources>

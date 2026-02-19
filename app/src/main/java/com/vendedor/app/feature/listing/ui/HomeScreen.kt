@@ -95,8 +95,10 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(items, key = { it.id }) { item ->
-                    // ItemCard will be implemented in Phase 5
-                    Text(text = item.title)
+                    ItemCard(
+                        item = item,
+                        onClick = { onItemClick(item.id) }
+                    )
                 }
             }
         }

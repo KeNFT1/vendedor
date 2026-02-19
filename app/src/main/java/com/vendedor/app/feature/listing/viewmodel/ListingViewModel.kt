@@ -3,11 +3,15 @@ package com.vendedor.app.feature.listing.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.content.Context
 import com.vendedor.app.core.data.local.dao.ItemDao
 import com.vendedor.app.core.data.local.dao.ItemPhotoDao
 import com.vendedor.app.core.data.local.entity.ItemEntity
 import com.vendedor.app.core.data.local.entity.ItemPhotoEntity
+import com.vendedor.app.core.util.PhotoUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,13 +45,17 @@ data class ListingFormState(
 class ListingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val itemDao: ItemDao,
-    private val itemPhotoDao: ItemPhotoDao
+    private val itemPhotoDao: ItemPhotoDao,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val itemId: Long = savedStateHandle["itemId"] ?: 0L
 
     private val _uiState = MutableStateFlow(ListingFormState(itemId = itemId))
     val uiState: StateFlow<ListingFormState> = _uiState.asStateFlow()
+
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
 
     init {
         loadItem()
@@ -124,6 +132,19 @@ class ListingViewModel @Inject constructor(
                 _uiState.update { it.copy(isSaving = false, error = e.message) }
             }
         }
+    }
+
+    fun savePhotosToGallery() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val success = _uiState.value.photos.all { photo ->
+                PhotoUtils.saveToGallery(appContext, photo.filePath)
+            }
+            _snackbarMessage.value = if (success) "saved" else "error"
+        }
+    }
+
+    fun clearSnackbar() {
+        _snackbarMessage.value = null
     }
 
     fun deleteItem(onDeleted: () -> Unit) {

@@ -33,6 +33,8 @@ data class IdentificationUiState(
     val widthInches: String = "",
     val heightInches: String = "",
     val weightOz: String = "",
+    val suggestedPriceLow: String = "",
+    val suggestedPriceHigh: String = "",
     val error: String? = null
 )
 
@@ -85,7 +87,9 @@ class IdentificationViewModel @Inject constructor(
                         lengthInches = result.estimatedLengthInches?.toString() ?: "",
                         widthInches = result.estimatedWidthInches?.toString() ?: "",
                         heightInches = result.estimatedHeightInches?.toString() ?: "",
-                        weightOz = result.estimatedWeightOz?.toString() ?: ""
+                        weightOz = result.estimatedWeightOz?.toString() ?: "",
+                        suggestedPriceLow = result.estimatedPriceLow?.toString() ?: "",
+                        suggestedPriceHigh = result.estimatedPriceHigh?.toString() ?: ""
                     )
                 }
             } catch (e: Exception) {
@@ -122,6 +126,8 @@ class IdentificationViewModel @Inject constructor(
                     estimatedWidthInches = state.widthInches.toFloatOrNull(),
                     estimatedHeightInches = state.heightInches.toFloatOrNull(),
                     estimatedWeightOz = state.weightOz.toFloatOrNull(),
+                    suggestedPriceLow = state.suggestedPriceLow.toDoubleOrNull(),
+                    suggestedPriceHigh = state.suggestedPriceHigh.toDoubleOrNull(),
                     aiIdentificationJson = state.identification?.toString(),
                     updatedAt = System.currentTimeMillis()
                 )
