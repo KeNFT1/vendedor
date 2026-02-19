@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vendedor</string>
+
+    <!-- General -->
+    <string name="settings">Configuración</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="edit">Editar</string>
+    <string name="close">Cerrar</string>
+    <string name="retry">Reintentar</string>
+    <string name="loading">Cargando…</string>
+    <string name="error_generic">Ocurrió un error. Inténtalo de nuevo.</string>
+    <string name="copy">Copiar</string>
+    <string name="copied">Copiado al portapapeles</string>
+    <string name="yes">Sí</string>
+    <string name="no">No</string>
+
+    <!-- Home Screen -->
+    <string name="add_item">Agregar artículo</string>
+    <string name="empty_items_title">No hay artículos</string>
+    <string name="empty_items_subtitle">Toca + para fotografiar un artículo y empezar a vender</string>
+    <string name="search_items">Buscar artículos…</string>
+
+    <!-- Item Status -->
+    <string name="status_draft">Borrador</string>
+    <string name="status_listed">Publicado</string>
+    <string name="status_sold">Vendido</string>
+    <string name="status_archived">Archivado</string>
+
+    <!-- Item Condition -->
+    <string name="condition_new">Nuevo</string>
+    <string name="condition_like_new">Como nuevo</string>
+    <string name="condition_good">Bueno</string>
+    <string name="condition_fair">Regular</string>
+    <string name="condition_poor">Malo</string>
+
+    <!-- Camera -->
+    <string name="take_photo">Tomar foto</string>
+    <string name="pick_from_gallery">Elegir de galería</string>
+    <string name="camera_permission_required">Se necesita permiso de cámara para tomar fotos</string>
+    <string name="photo_count">%d foto(s)</string>
+    <string name="select_main_photo">Selecciona la foto principal</string>
+    <string name="main_photo">Foto principal</string>
+    <string name="retake">Volver a tomar</string>
+    <string name="confirm_photos">Confirmar fotos</string>
+
+    <!-- AI Identification -->
+    <string name="identify_item">Identificar artículo</string>
+    <string name="identifying">Identificando artículo…</string>
+    <string name="identification_complete">Artículo identificado</string>
+    <string name="identification_failed">No se pudo identificar el artículo</string>
+    <string name="edit_details">Editar detalles</string>
+
+    <!-- Listing Form -->
+    <string name="title">Título</string>
+    <string name="description">Descripción</string>
+    <string name="category">Categoría</string>
+    <string name="brand">Marca</string>
+    <string name="condition">Condición</string>
+    <string name="dimensions">Dimensiones</string>
+    <string name="length">Largo</string>
+    <string name="width">Ancho</string>
+    <string name="height">Alto</string>
+    <string name="weight">Peso</string>
+    <string name="weight_oz">Peso (oz)</string>
+    <string name="asking_price">Precio de venta</string>
+    <string name="suggested_price">Precio sugerido</string>
+    <string name="photos">Fotos</string>
+    <string name="create_listing">Crear publicación</string>
+    <string name="update_listing">Actualizar publicación</string>
+    <string name="inches">pulgadas</string>
+
+    <!-- Pricing -->
+    <string name="research_prices">Investigar precios</string>
+    <string name="researching_prices">Investigando precios…</string>
+    <string name="price_range">Rango de precios</string>
+    <string name="low_price">Precio bajo</string>
+    <string name="median_price">Precio medio</string>
+    <string name="high_price">Precio alto</string>
+    <string name="comparable_items">Artículos comparables</string>
+    <string name="no_price_data">No se encontraron datos de precios</string>
+    <string name="items_found">%d artículos encontrados</string>
+
+    <!-- Shipping -->
+    <string name="shipping_info">Información de envío</string>
+    <string name="package_dimensions">Dimensiones del paquete</string>
+    <string name="package_weight">Peso del paquete</string>
+    <string name="ship_from">Enviar desde</string>
+    <string name="ship_to">Enviar a</string>
+    <string name="address_name">Nombre</string>
+    <string name="address_street">Dirección</string>
+    <string name="address_city">Ciudad</string>
+    <string name="address_state">Estado</string>
+    <string name="address_zip">Código postal</string>
+    <string name="open_pirateship">Abrir Pirateship</string>
+    <string name="copy_dimensions">Copiar dimensiones</string>
+    <string name="copy_weight">Copiar peso</string>
+    <string name="copy_address">Copiar dirección</string>
+    <string name="tracking_number">Número de rastreo</string>
+
+    <!-- Publishing -->
+    <string name="publish">Publicar</string>
+    <string name="publish_to">Publicar en</string>
+    <string name="connect_account">Conectar cuenta</string>
+    <string name="connected">Conectado</string>
+    <string name="not_connected">No conectado</string>
+    <string name="export_listing">Exportar publicación</string>
+    <string name="share_listing">Compartir publicación</string>
+    <string name="publishing">Publicando…</string>
+    <string name="published_successfully">Publicado exitosamente</string>
+
+    <!-- Settings -->
+    <string name="language">Idioma</string>
+    <string name="spanish">Español</string>
+    <string name="english">English</string>
+    <string name="sender_address">Dirección del remitente</string>
+    <string name="save_address">Guardar dirección</string>
+    <string name="about">Acerca de</string>
+    <string name="version">Versión</string>
+</resources>

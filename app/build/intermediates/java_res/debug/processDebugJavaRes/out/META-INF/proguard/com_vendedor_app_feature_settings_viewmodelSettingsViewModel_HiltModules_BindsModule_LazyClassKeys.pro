@@ -1,0 +1,3 @@
+-keep,allowobfuscation,allowshrinking class com.vendedor.app.feature.publishing.viewmodel.PublishViewModel
+-keep,allowobfuscation,allowshrinking class com.vendedor.app.feature.publishing.viewmodel.PublishViewModel
+-keep,allowobfuscation,allowshrinking class com.vendedor.app.feature.settings.viewmodel.SettingsViewModel
