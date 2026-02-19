@@ -121,7 +121,6 @@ def normalize_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def run_ollama(image_path: pathlib.Path, model: str, timeout: int) -> Dict[str, Any]:
     image_b64 = encode_image(image_path)
-    mime = detect_mime(image_path)
 
     body = {
         "model": model,
@@ -131,7 +130,8 @@ def run_ollama(image_path: pathlib.Path, model: str, timeout: int) -> Dict[str, 
             {
                 "role": "user",
                 "content": PROMPT.format(schema=json.dumps(SCHEMA_TEMPLATE, indent=2)),
-                "images": [f"data:{mime};base64,{image_b64}"],
+                # Ollama expects raw base64 image bytes (not data: URI).
+                "images": [image_b64],
             }
         ],
     }
@@ -146,6 +146,9 @@ def run_ollama(image_path: pathlib.Path, model: str, timeout: int) -> Dict[str, 
     try:
         with request.urlopen(req, timeout=timeout) as resp:
             raw = resp.read().decode("utf-8")
+    except error.HTTPError as e:
+        details = e.read().decode("utf-8", errors="ignore") if hasattr(e, "read") else ""
+        raise RuntimeError(f"Ollama API error ({e.code}): {details[:500]}") from e
     except error.URLError as e:
         raise RuntimeError(
             "Cannot reach Ollama at http://127.0.0.1:11434. Start it with: ollama serve"
